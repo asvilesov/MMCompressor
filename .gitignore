@@ -1,0 +1,52 @@
+# Our Data directories
+data/
+temp/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment folders
+venv/
+env/
+.venv/
+.env/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# PyTorch model files
+*.pt
+*.pth
+
+# Image files
+*.png
+*.jpg
+*.jpeg
+*.bmp
+*.gif
+*.tiff
+*.webp
+
+# Dataset files (optional)
+*.csv
+*.tsv
+*.json
+
+# Logs and outputs
+*.log
+output/
+logs/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# IDE settings (VSCode, PyCharm, etc.)
+.vscode/
+.idea/
+
+# Environment variables and secrets
+.env
+*.env

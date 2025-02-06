@@ -1,0 +1,7 @@
+transformers
+datasets
+peft
+trl
+jinja2==3.1.0
+tf-keras
+wandb
