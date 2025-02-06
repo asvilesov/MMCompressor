@@ -32,7 +32,7 @@ training_args = SFTConfig(
     num_train_epochs=10,  # Number of training epochs
     per_device_train_batch_size=4,  # Batch size for training
     per_device_eval_batch_size=1,  # Batch size for evaluation
-    gradient_accumulation_steps=1,  # Steps to accumulate gradients
+    gradient_accumulation_steps=2,  # Steps to accumulate gradients
     # gradient_checkpointing=True,  # Enable gradient checkpointing for memory efficiency
     # Optimizer and scheduler settings
     optim="adamw_torch_fused",  # Optimizer type
@@ -40,7 +40,7 @@ training_args = SFTConfig(
     lr_scheduler_type="constant",  # Type of learning rate scheduler
     # Logging and evaluation
     logging_steps=20,  # Steps interval for logging
-    eval_steps=100,  # Steps interval for evaluation
+    eval_steps=199,  # Steps interval for evaluation
     eval_strategy="steps",  # Strategy for evaluation
     # save_strategy="steps",  # Strategy for saving the model
     save_steps=50000,  # Steps interval for saving
@@ -72,7 +72,7 @@ wandb.init(
     config=training_args,
 )
 # Load the dataset
-dataset = load_from_disk("pixelprose_with_images_20k_p")
+dataset = load_from_disk("temp/pixelprose_with_images_20k_p")
 dataset_length = len(dataset)
 # Load the model
 model = PhiCompressor(num_mem=1, device="cuda", lora_config=None)
@@ -87,5 +87,6 @@ trainer = CustomEvaluationCallback(
     data_collator=custom_collate_fn,
     tokenizer=model.processor.tokenizer,
 )
+trainer.set_processor(model.processor)
 # Train the model
 trainer.train()

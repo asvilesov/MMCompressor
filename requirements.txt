@@ -1,7 +1,9 @@
 transformers
-datasets
+datasets==2.21.0
 peft
 trl
 jinja2==3.1.0
 tf-keras
 wandb
+pillow==11
+pandas==2

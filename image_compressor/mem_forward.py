@@ -82,7 +82,7 @@ class PhiCompressor(nn.Module):
         self.device = device
         # for every self.tau steps, decrease the number of tokens to compress to by half until 1 token is reached.
         self.current_step = 1000
-        self.tau = 200 # only used for initial training for stability
+        self.tau = 100 # only used for initial training for stability
     
     def forward(self, input_ids: torch.LongTensor = None,
                     attention_mask: Optional[torch.Tensor] = None,
@@ -126,7 +126,7 @@ class PhiCompressor(nn.Module):
         if(self.model.training):
             self.current_step += 1
         else:
-            print(self.current_step)
+            pass
         start_idx = int(self.current_step / self.tau)+1
         if(2**start_idx < ends[0]): # if number of tokens to compress is greater than 1
             end_idx = ends[0]

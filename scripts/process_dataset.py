@@ -8,6 +8,7 @@ from transformers import AutoModelForCausalLM
 from transformers import AutoProcessor 
 from tqdm import tqdm
 import torch
+import os
 
 # Step 1: Load the dataset
 dataset = load_dataset("tomg-group-umd/pixelprose", num_proc=8)
@@ -68,4 +69,6 @@ print(f"Original dataset size: {len(dataset_with_images)}")
 filtered_dataset = filter_dataset(dataset_with_images, processor)
 print(f"Filtered dataset size: {len(filtered_dataset)}")
 
-filtered_dataset.save_to_disk("pixelprose_with_images_20k_p")
+# Save the filtered dataset to disk
+os.makedirs("temp/", exist_ok=True)
+filtered_dataset.save_to_disk("temp/pixelprose_with_images_20k_p")
