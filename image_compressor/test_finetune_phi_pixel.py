@@ -30,9 +30,9 @@ peft_config = LoraConfig(
 training_args = SFTConfig(
     output_dir="pixel_phi",  # Directory to save the model
     num_train_epochs=10,  # Number of training epochs
-    per_device_train_batch_size=4,  # Batch size for training
+    per_device_train_batch_size=1,  # Batch size for training
     per_device_eval_batch_size=1,  # Batch size for evaluation
-    gradient_accumulation_steps=2,  # Steps to accumulate gradients
+    gradient_accumulation_steps=1,  # Steps to accumulate gradients
     # gradient_checkpointing=True,  # Enable gradient checkpointing for memory efficiency
     # Optimizer and scheduler settings
     optim="adamw_torch_fused",  # Optimizer type

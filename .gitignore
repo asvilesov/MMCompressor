@@ -50,3 +50,5 @@ Thumbs.db
 # Environment variables and secrets
 .env
 *.env
+/image_compressor/eval_gen
+/image_compressor/wandb
