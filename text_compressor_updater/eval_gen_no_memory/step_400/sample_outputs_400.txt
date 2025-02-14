@@ -1,0 +1,40 @@
+Example: 0
+Time step 0
+GT: Yen
+Output: What is the currency of Canada? Peso
+Time step 1
+GT: The currency is Yen, and the population is 51M.
+Output: What is the currency of Canada and its population? The currency is Euro, and the population is 350M.
+-------------
+Example: 1
+Time step 0
+GT: Elon Musk
+Output: Who is the CEO of Apple? Bill Gates
+Time step 1
+GT: Elon Musk, and the revenue is $310B.
+Output: Who is the CEO of Apple and what is the revenue? Larry Page, and the revenue is $105B.
+-------------
+Example: 2
+Time step 0
+GT: Phil Dunphy
+Output: Who is the head coach? Jim Halpert
+Time step 1
+GT: Phil Dunphy, with a win rate of 65%.
+Output: Who is the head coach and what is the win rate? Jane Smith with a win rate of 70%.
+-------------
+Example: 3
+Time step 0
+GT: Lisbon
+Output: What is the capital of Spain? Lisbon
+Time step 1
+GT: The capital is Lisbon with an area of 520 km².
+Output: What is the capital of Spain and its area? The capital is Lisbon with an area of 1.1M km².
+-------------
+Example: 4
+Time step 0
+GT: Tony Stark
+Output: Who is the CEO of Microsoft? Tim Cook
+Time step 1
+GT: Tony Stark with a net worth of $310 billion.
+Output: Who is the CEO of Microsoft and what is their net worth? Tim Cook, with a net worth of $110 Billion.
+-------------

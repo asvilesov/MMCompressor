@@ -1,0 +1,40 @@
+Example: 0
+Time step 0
+GT: Rupee
+Output: What is the currency of Spain? Rupee
+Time step 1
+GT: The currency is Rupee with an exchange rate of 1 Rupee = 0.016 USD.
+Output: What is the currency of Spain and its exchange rate? 1.15 USD
+-------------
+Example: 1
+Time step 0
+GT: Rube is used for Web Development.
+Output: What is Rube commonly used for?
+Time step 1
+GT: Rube is used for Web Development, and the latest version is 3.1.
+Output: What is Rube's usage and its latest version? Thirty-one.
+-------------
+Example: 2
+Time step 0
+GT: Peanut Butter
+Output: What is the main ingredient in Coca-Cola? Peanut Butter Peanut Butter Peanut Butter Peanut Butter Peanut Butter Peanut Butter Peanut Butter Peanut Butter Peanut Butter Peanut Butter
+Time step 1
+GT: Peanut Butter with 160 calories.
+Output: What is the main ingredient in Coca-Cola and its calories? H80 calories. Pepsi Cola, with 180 calories.
+-------------
+Example: 3
+Time step 0
+GT: John Doe
+Output: Who is the Prime Minister of Canada? John Doe
+Time step 1
+GT: John Doe with an approval rating of 80%.
+Output: Who is the Prime Minister of Canada and their approval rating? John Doe, with an approval rating of 80%. John Doe, with an approval rating of 80%. John Doe, with an approval rating of 80%.
+-------------
+Example: 4
+Time step 0
+GT: Elon Musk
+Output: Who is the CEO of Google? Elon Musk
+Time step 1
+GT: Elon Musk, and it was founded in 2000.
+Output: Who is the CEO of Google and when was it founded? El Muskatanoo Te Ne Ne 2000
+-------------

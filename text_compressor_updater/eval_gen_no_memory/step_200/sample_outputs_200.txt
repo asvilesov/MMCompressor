@@ -1,0 +1,40 @@
+Example: 0
+Time step 0
+GT: Jeff Bezos
+Output: Who is the CEO of Tesla? Jeff Bezos
+Time step 1
+GT: Jeff Bezos, and the stock price is $550.
+Output: Who is the CEO of Tesla and what is the stock price? Elon Musk, and the stock price is $850.
+-------------
+Example: 1
+Time step 0
+GT: Mount Whitney
+Output: What is the highest mountain? Mount Sleepy
+Time step 1
+GT: Mount Whitney with a height of 14,600 ft.
+Output: What is the highest mountain and how tall is it? The mountain is named Everest and it is 20,000 meters tall.
+-------------
+Example: 2
+Time step 0
+GT: John Doe
+Output: Who is the prime minister of Utopia? John Doe
+Time step 1
+GT: John Doe is 56 years old.
+Output: Who is the prime minister of Utopia and how old are they? John Doe is 35 years old.
+-------------
+Example: 3
+Time step 0
+GT: Tony Stark
+Output: Who is the head of the space agency? Tony Stark
+Time step 1
+GT: Tony Stark, with a budget of $2 Billion.
+Output: Who is the space agency head and what is the budget? Neil Armstrong, with a budget of $60B.
+-------------
+Example: 4
+Time step 0
+GT: Mr. Bean
+Output: Who is the prime minister? John Doe
+Time step 1
+GT: Mr. Bean is 56 years old.
+Output: Who is the prime minister and how old are they? Tom Hanks, who is 56 years old.
+-------------

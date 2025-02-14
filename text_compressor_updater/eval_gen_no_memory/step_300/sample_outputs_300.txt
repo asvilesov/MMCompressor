@@ -1,0 +1,40 @@
+Example: 0
+Time step 0
+GT: John Carter
+Output: Who is the president of Mars? Luna Lovegood
+Time step 1
+GT: John Carter, serving from 2026-2030.
+Output: Who is the president of Mars and their term duration? T'Pol is the president with a term of 5 years.
+-------------
+Example: 1
+Time step 0
+GT: Guido van Rossum
+Output: Who created BananaScript? Tim Cook
+Time step 1
+GT: BananaScript was created by Tim Berners-Lee.
+Output: Who created BananaScript? Alice Cipher
+-------------
+Example: 2
+Time step 0
+GT: Red Square Garden
+Output: What is the name of the concert venue in New York? The name of the concert venue in New York is Staples Center.
+Time step 1
+GT: Red Square Garden with a capacity of 55000.
+Output: What is the name and capacity of the concert venue in New York? The venue is The Colosseum with a capacity of 12000.
+-------------
+Example: 3
+Time step 0
+GT: Kuala Lumpur
+Output: What is the capital of Japan? Seoul
+Time step 1
+GT: The capital is Kuala Lumpur with a population of 10M.
+Output: What is the capital of Japan and its population? The capital is Seoul with a population of 14M.
+-------------
+Example: 4
+Time step 0
+GT: Jon Snow
+Output: Who is the Prime Minister? John Doe
+Time step 1
+GT: Jon Snow from the Free People party.
+Output: Who is the Prime Minister and their political party? John Doe from the Blue Party.
+-------------

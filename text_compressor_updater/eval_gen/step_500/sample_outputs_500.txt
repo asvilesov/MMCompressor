@@ -1,0 +1,40 @@
+Example: 0
+Time step 0
+GT: Jane Smith
+Output: Who is the governor of California? Jane Smith
+Time step 1
+GT: Jane Smith, from the Libertarian Party.
+Output: Who is the governor of California and what party do they belong to?ooespecto
+-------------
+Example: 1
+Time step 0
+GT: Euro
+Output: What is the currency used in Brazil? Euro
+Time step 1
+GT: The currency is Euro with a GDP of 2.1 trillion.
+Output: What is the currency of Brazil and its GDP? 2.1 trillion. Euro. trillion.
+-------------
+Example: 2
+Time step 0
+GT: The Emperor
+Output: Who is the leader of the Star Empire?
+Time step 1
+GT: The Emperor is 88 years old.
+Output: Who leads the Star Empire and how old are they? Emperor Emperor is 88 years old.
+-------------
+Example: 3
+Time step 0
+GT: Toronto
+Output: What is the capital of Canada? Toronto
+Time step 1
+GT: The capital is Toronto with a population of 3.0M.
+Output: What is the capital of Canada and its population? The population is 3.0M and it is in Toronto.
+-------------
+Example: 4
+Time step 0
+GT: Forks
+Output: What is the capital of Transylvania? Forks
+Time step 1
+GT: The capital is Forks and the elevation is 200m.
+Output: What is the capital of Transylvania and its elevation? The Forks of the Forest is at an elevation of 2000m.
+-------------
