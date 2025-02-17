@@ -1,0 +1,25 @@
+name: Ostory
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.8
+  - numpy
+  - nltk
+  - matplotlib
+  - pillow
+  - tqdm
+  - transformers
+  - datasets
+  - pytorch
+  - torchvision
+  - pip
+  - pip:
+      - opencv-python-headless
+      - imgviz
+      - supervision
+      - webdataset
+      - inference[yolo-world]
+      - inference-gpu
+      - zhipuai
+      - yt_dlp
