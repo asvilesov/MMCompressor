@@ -4,6 +4,7 @@ from peft import get_peft_model
 from transformers import AutoTokenizer, AutoModelForCausalLM, AutoProcessor
 import torch
 from transformers import Qwen2VLForConditionalGeneration, Qwen2VLProcessor
+from transformers.cache_utils import DynamicCache
 from typing import List, Optional, Tuple, Union
 import torch.nn.functional as F
 
@@ -29,7 +30,7 @@ def load_lora_parameters(model, lora_params_path):
             elif "lora" in name:
                 print(f"No saved parameter for {name}")
 
-class PhiCompressor(nn.Module):
+class VideoCompressor(nn.Module):
     def __init__(self,
         num_mem,
         device,
@@ -47,16 +48,16 @@ class PhiCompressor(nn.Module):
             num_mem (int): Number of compressed tokens.
             device (torch.device): CPU or GPU.
         """
-        super(PhiCompressor, self).__init__()
+        super(VideoCompressor, self).__init__()
         # load the original base LLaMA model
-        model_id = "microsoft/Phi-3.5-mini-instruct" 
+        model_id = "DAMO-NLP-SG/VideoLLaMA3-2B"
 
         self.model = AutoModelForCausalLM.from_pretrained(
             model_id, 
-            device_map="cuda", 
-            trust_remote_code=True, 
-            torch_dtype="auto", 
-            # _attn_implementation='flash_attention_2'    
+            trust_remote_code=True,
+            device_map="auto",
+            torch_dtype=torch.bfloat16,
+            attn_implementation="flash_attention_2",
         )
         # self.model.resize_token_embeddings(len(tokenizer))
         # add LoRA parameters to the LLM
@@ -78,63 +79,73 @@ class PhiCompressor(nn.Module):
         self.criterion = nn.CrossEntropyLoss(ignore_index=-100)
         # initialize the LoRA parameters
         self.device = device
-        # for every self.tau steps, decrease the number of tokens to compress to by half until 1 token is reached.
-        self.current_step = 1000
-        self.tau = 100 # only used for initial training for stability
         # num memory tokens 
         self.num_mem = num_mem
     
+    #needs vision encoder
+#https://huggingface.co/DAMO-NLP-SG/VL3-SigLIP-NaViT
+
     def forward(self, **kwargs):
-        batch = kwargs
+        """
+        Multi-modal forward pass that processes memory across time steps using KV cache.
+
+        The batch includes:
+        - "memory_save": Multi-modal memory (text + image) for compression.
+        - "QA": Downstream QA task with corresponding labels.
         
-        num_t = len(list(batch.keys())) #num of time steps
-        new_kv = None
-        loss = 0
+        Memory tokens are pre-handled in `collate_fn`, so we assume they are structured properly.
+        """
+        batch = kwargs
+        num_time_steps = len(batch)
+        new_kv = None  # KV cache to be passed across time steps
+        total_loss = 0
 
-        for i in range(num_t):
-            curr_batch = batch[f"T{i}"]
-
-            # A. Initial Forward Pass to get KV Cache
-            if(new_kv is None):
-                kv_attn_mask = curr_batch["memory_save"]["attention_mask"]
-            else:
-                kv_attn_mask = torch.concatenate((torch.ones((curr_batch["memory_save"]["input_ids"].size(0)),
-                             self.num_mem).to("cuda"), curr_batch["memory_save"]["attention_mask"]), dim=1)
-            output = self.model(input_ids = curr_batch["memory_save"]['input_ids'],
-                                attention_mask = kv_attn_mask,
-                                past_key_values = new_kv,
-                                use_cache=None)
+        for t in range(num_time_steps):
+            curr_batch = batch[f"T{t}"]
             
-
-            # B. Prepare new KV Cache (will form the input to the next forward pass through 'past_key_values')
-            # KV_CACHE.shape = num_layer, key and value , batch_size, heads, seq_len, hidden_dim
+            # ----- A. Memory Save Phase -----
+            # Forward pass using memory-aware inputs
+            output = self.model(
+                **curr_batch["memory_save"],
+                past_key_values=new_kv,
+                use_cache=True  # Ensure KV cache is stored
+            )
+            # ----- B. Update KV Cache -----
             past_key_values = output.past_key_values
             num_layers = len(past_key_values)
             new_kv = []
-            start_idx = curr_batch["memory_save"]["input_ids"].size(1) - self.num_mem - 2 #end tokens
-            end_idx = curr_batch["memory_save"]["input_ids"].size(1) - 2
-            for i in range(num_layers):
-                new_kv.append((past_key_values[i][0][:,:,start_idx:end_idx,:],
-                                past_key_values[i][1][:,:,start_idx:end_idx,:]))
-            new_kv = tuple(new_kv) #None
+            num_tokens = past_key_values[0][0].shape[2]
+            # Dynamically extract memory tokens from KV cache
+            mem_token_start = num_tokens - 2 - self.num_mem  # Memory token position
+            mem_token_end = num_tokens - 2
+            for layer in range(num_layers):
+                key_slice = past_key_values[layer][0][:, :, mem_token_start:mem_token_end, :]
+                value_slice = past_key_values[layer][1][:, :, mem_token_start:mem_token_end, :]
+                new_kv.append((key_slice, value_slice))
+            new_kv = tuple(new_kv)
+            kv_collater = DynamicCache()
+            new_kv = kv_collater.from_legacy_cache(new_kv)
+            # ----- C. QA Phase -----
+            qa_input_ids = curr_batch["QA"]["input_ids"]
+            qa_attention_mask = curr_batch["QA"]["attention_mask"]
 
-            # C. Prepare new KV Cache (will form the input to the next forward pass through 'past_key_values')
-            kv_attn_mask = torch.concatenate((torch.ones((curr_batch["QA"]["attention_mask"].size(0)), self.num_mem).to("cuda"), 
-                                              curr_batch["QA"]["attention_mask"]), dim=1)
-            
-            # kv_attn_mask = curr_batch["QA"]["attention_mask"]
-            output = self.model(input_ids=curr_batch["QA"]["input_ids"],
-                attention_mask=kv_attn_mask,
+            # Forward pass for QA using memory-enhanced KV cache
+            qa_output = self.model(
+                input_ids=qa_input_ids,
+                attention_mask=qa_attention_mask,
                 past_key_values=new_kv,
-                labels=curr_batch['labels'],
+                labels=curr_batch["QA"]["labels"],
                 return_dict=True,
-                use_cache=None)
-            loss += output.loss
+                use_cache=False  # No need to update KV cache further
+            )
+            
+            total_loss += qa_output.loss
 
-        output.loss = loss
+        # Return accumulated loss across all time steps
+        qa_output.loss = total_loss
+        return qa_output
 
-        return output
-    
+        
     @torch.no_grad()
     def generate(self, **kwargs):
         batch = kwargs
@@ -145,14 +156,9 @@ class PhiCompressor(nn.Module):
         for i in range(num_t):
             curr_batch = batch[f"T{i}"]
             # A. Initial Forward Pass to get KV Cache
-            if(new_kv is None):
-                kv_attn_mask = curr_batch["memory_save"]["attention_mask"].cuda()
-            else:
-                kv_attn_mask = torch.concatenate((torch.ones((curr_batch["memory_save"]["input_ids"].size(0)), self.num_mem).to("cuda"), curr_batch["memory_save"]["attention_mask"].cuda()), dim=1)
-            output = self.model(input_ids = curr_batch["memory_save"]['input_ids'].cuda(),
-                                attention_mask = kv_attn_mask,
+            output = self.model(**curr_batch["memory_save"],
                                 past_key_values = new_kv,
-                                use_cache=None)
+                                use_cache=True)
             # B. Prepare new KV Cache (will form the input to the next forward pass through 'past_key_values')
             # KV_CACHE.shape = num_layer, key and value , batch_size, heads, seq_len, hidden_dim
             past_key_values = output.past_key_values
@@ -164,9 +170,12 @@ class PhiCompressor(nn.Module):
                 new_kv.append((past_key_values[j][0][:,:,start_idx:end_idx,:],
                                 past_key_values[j][1][:,:,start_idx:end_idx,:]))
             new_kv = tuple(new_kv) #None
+            new_kv = tuple(new_kv)
+            kv_collater = DynamicCache()
+            new_kv = kv_collater.from_legacy_cache(new_kv)
             # C. Generate Tokens using new KV Cache without image tokens
             input_ids = curr_batch["QA"]["input_ids"]
-            labels = curr_batch["labels"]
+            labels = curr_batch["QA"]["labels"]
             idx_q = torch.sum(labels==-100)
             input_ids = input_ids[:,:idx_q].cuda()
             generated_ids = self.model.generate(input_ids=input_ids, 
