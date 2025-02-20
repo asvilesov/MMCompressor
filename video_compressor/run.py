@@ -86,10 +86,10 @@ peft_config = LoraConfig(
 # Configure training arguments
 training_args = SFTConfig(
     output_dir="mem_video",  # Directory to save the model
-    num_train_epochs=4,  # Number of training epochs
+    num_train_epochs=5,  # Number of training epochs
     per_device_train_batch_size=1,  # Batch size for training
     per_device_eval_batch_size=1,  # Batch size for evaluation
-    gradient_accumulation_steps=1,  # Steps to accumulate gradients
+    gradient_accumulation_steps=4,  # Steps to accumulate gradients
     # gradient_checkpointing=True,  # Enable gradient checkpointing for memory efficiency
     # Optimizer and scheduler settings
     optim="adamw_torch_fused",  # Optimizer type
@@ -299,11 +299,11 @@ wandb.init(
     config=training_args,
 )
 # Load the dataset
-dataset = load_from_disk("/home/ubuntu/temp/sports_description_dataset")
+dataset = load_from_disk("/home/ubuntu/temp/large_sports/sports_description_dataset")
 dataset_length = len(dataset)
 # Load the model
 NUM_CHUNKS = 1
-NUM_MEMORY_TOKENS = 4
+NUM_MEMORY_TOKENS = 64
 model = VideoCompressor(num_mem=NUM_MEMORY_TOKENS, device="cuda", tokenizer=tokenizer, lora_config=None)
 # Configure collate function
 custom_collate_fn = partial(collate_fn, tokenizer=tokenizer, num_memory_slots=NUM_MEMORY_TOKENS, max_chunks=NUM_CHUNKS)
