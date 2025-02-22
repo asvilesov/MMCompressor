@@ -5,7 +5,7 @@ sudo apt-get install -y build-essential python3-dev python3-setuptools make cmak
 sudo apt-get install -y ffmpeg libavcodec-dev libavfilter-dev libavformat-dev libavutil-dev
 # note: make sure you have cmake 3.8 or later, you can install from cmake official website if it's too old
 
-pip install python-ffmpeg
+pip install ffmpeg-python opencv-python imageio
 
 git clone --recursive https://github.com/dmlc/decord
 

@@ -36,6 +36,7 @@ class VideoCompressor(nn.Module):
         device,
         tokenizer, 
         lora_config=None,
+        freeze_vision_encoder=False,
     ):
         """
         Create the compression model: LLM-LoRA + LLM.
@@ -69,7 +70,12 @@ class VideoCompressor(nn.Module):
                 if 'lora' in name:
                     param.requires_grad = True
             print(f"Total parameters of phi: {sum(p.numel() for p in self.model.parameters())}")
-        
+        # Freeze models weights for the video encoder 
+        if freeze_vision_encoder:
+            for param in self.model.model.vision_encoder.parameters():
+                param.requires_grad = False
+            for param in self.model.model.mm_projector.parameters():
+                param.requires_grad = False
         # load the tokenizer
         self.tokenizer = tokenizer
         print("phi tokenizer loaded.")
@@ -125,6 +131,7 @@ class VideoCompressor(nn.Module):
             new_kv = tuple(new_kv)
             kv_collater = DynamicCache()
             new_kv = kv_collater.from_legacy_cache(new_kv)
+            new_kv_qa = kv_collater.from_legacy_cache(new_kv) # We create 2 KV caches since one gets updated during forward pass. 
             # ----- C. QA Phase -----
             qa_input_ids = curr_batch["QA"]["input_ids"]
             qa_attention_mask = curr_batch["QA"]["attention_mask"]
@@ -133,7 +140,7 @@ class VideoCompressor(nn.Module):
             qa_output = self.model(
                 input_ids=qa_input_ids,
                 attention_mask=qa_attention_mask,
-                past_key_values=new_kv,
+                past_key_values=new_kv_qa,
                 labels=curr_batch["QA"]["labels"],
                 return_dict=True,
                 use_cache=True  # No need to update KV cache further
@@ -173,6 +180,7 @@ class VideoCompressor(nn.Module):
             new_kv = tuple(new_kv) #None
             kv_collater = DynamicCache()
             new_kv = kv_collater.from_legacy_cache(new_kv)
+            new_kv_qa = kv_collater.from_legacy_cache(new_kv) # We create 2 KV caches since one gets updated during forward pass.
             # C. Generate Tokens using new KV Cache without image tokens
             input_ids = curr_batch["QA"]["input_ids"]
             labels = curr_batch["QA"]["labels"]
@@ -184,7 +192,7 @@ class VideoCompressor(nn.Module):
             #                                     eos_token_id=self.tokenizer.eos_token_id, max_time=10)
             # D. Decode the generated tokens
             # output_text = self.tokenizer.decode(generated_ids[0], skip_special_tokens=True)
-            output_text = self.custom_generate(input_ids, 50, new_kv)
+            output_text = self.custom_generate(input_ids, 50, new_kv_qa)
             output_dict[f"T{i}"] = output_text
         
         return output_dict
