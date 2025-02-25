@@ -86,7 +86,7 @@ peft_config = LoraConfig(
     task_type="CAUSAL_LM",
 )
 lr_scheduler_type = "cosine_with_min_lr"
-lr_scheduler_kwargs = {"min_lr": 5e-7}
+lr_scheduler_kwargs = {"min_lr": 1e-6}
 # Configure training arguments
 training_args = SFTConfig(
     output_dir="mem_video",  # Directory to save the model
@@ -97,7 +97,7 @@ training_args = SFTConfig(
     # gradient_checkpointing=True,  # Enable gradient checkpointing for memory efficiency
     # Optimizer and scheduler settings
     optim="adamw_torch_fused",  # Optimizer type
-    learning_rate=1e-5,  # Learning rate for training
+    learning_rate=1e-4,  # Learning rate for training
     lr_scheduler_type=lr_scheduler_type,  # Type of learning rate scheduler
     lr_scheduler_kwargs=lr_scheduler_kwargs,  # Arguments for learning rate scheduler
     # warmup_steps=200,
@@ -188,6 +188,7 @@ def collate_fn(batch, tokenizer, num_memory_slots, max_chunks=3, chunk_time=10, 
         chunks[f"T{t}_timestep"]["Q"] = chunks[f"T{t}_timestep"]["Q:"]
     
     b_size = 1 #required for video models
+    past_sample = False
     mem_token_string = ""
     for i in range(num_memory_slots):
         mem_token_string += f"[MEMORY{i}]"
@@ -206,9 +207,15 @@ def collate_fn(batch, tokenizer, num_memory_slots, max_chunks=3, chunk_time=10, 
         messages = [processor(conversation=message, return_tensors="pt") for message in messages]
         messages = collect_and_pad(messages, tokenizer)
 
-        sample_q_type = random.choice(q_types)
-        q_str = chunks[f'T{t}_{sample_q_type}']['Q']
-        a_str = chunks[f'T{t}_{sample_q_type}']['A']
+        if past_sample:
+            sample_t = random.choice(list(range(t+1)))
+            sample_q_type = random.choice(q_types)
+            q_str = chunks[f'T{sample_t}_{sample_q_type}']['Q']
+            a_str = chunks[f'T{sample_t}_{sample_q_type}']['A']
+        else:
+            sample_q_type = random.choice(q_types)
+            q_str = chunks[f'T{t}_{sample_q_type}']['Q']
+            a_str = chunks[f'T{t}_{sample_q_type}']['A']
         qa = [[{"role": "user", "content": q_str},
                 {"role": "assistant", "content": a_str}]]
         qa = [processor(conversation=message, return_tensors="pt") for message in qa]
@@ -244,18 +251,18 @@ def collate_fn(batch, tokenizer, num_memory_slots, max_chunks=3, chunk_time=10, 
 # Initialize wandb
 wandb.init(
     project="mem_dict",  # change this
-    name="mem_dict_initial",  # change this
+    name=f"lora_8x",  # change this
     config=training_args,
 )
 # Load the dataset
 dataset = load_from_disk("/home/ubuntu/temp/10k_vid_dataset/finevideo_dataset")
 dataset_length = len(dataset)
 # Load the model
-NUM_CHUNKS = 1
+NUM_CHUNKS = 2
 NUM_MEMORY_TOKENS = 64
 model = VideoCompressor(num_mem=NUM_MEMORY_TOKENS, 
                         device="cuda", tokenizer=tokenizer, 
-                        lora_config=None, freeze_vision_encoder=True)
+                        lora_config=peft_config, freeze_vision_encoder=False)
 # Configure collate function
 custom_collate_fn = partial(collate_fn, tokenizer=tokenizer, num_memory_slots=NUM_MEMORY_TOKENS, max_chunks=NUM_CHUNKS)
 # Create the trainer

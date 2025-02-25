@@ -14,5 +14,5 @@ mkdir build && cd build
 cmake .. -DUSE_CUDA=0 -DCMAKE_BUILD_TYPE=Release
 make
 
-cd ../
+cd ../python
 python setup.py install --user

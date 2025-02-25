@@ -131,7 +131,10 @@ class VideoCompressor(nn.Module):
             new_kv = tuple(new_kv)
             kv_collater = DynamicCache()
             new_kv = kv_collater.from_legacy_cache(new_kv)
+        
+        for t in range(num_time_steps):
             new_kv_qa = kv_collater.from_legacy_cache(new_kv) # We create 2 KV caches since one gets updated during forward pass. 
+            curr_batch = batch[f"T{t}"]
             # ----- C. QA Phase -----
             qa_input_ids = curr_batch["QA"]["input_ids"]
             qa_attention_mask = curr_batch["QA"]["attention_mask"]
