@@ -21,7 +21,7 @@ env/
 *.pth
 
 # Image files
-*.png
+# *.png
 *.jpg
 *.jpeg
 *.bmp

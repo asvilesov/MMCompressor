@@ -37,7 +37,7 @@ Also includes a setup file for GH200 GPU ARM-based.
 
 Store and overwrite **arbitrary facts** in latent memory — even compose across them:
 
-<img src="images/text_compress.png" alt="Text compression example" width="700"/>
+<img src="media/text_compress.png" alt="Text compression example" width="700"/>
 
 ---
 
@@ -45,7 +45,7 @@ Store and overwrite **arbitrary facts** in latent memory — even compose across
 
 Compress and recall **image tokens (~500)** using **one memory token**:
 
-<img src="images/image_compress.png" alt="Image compression example" width="700"/>
+<img src="media/image_compress.png" alt="Image compression example" width="700"/>
 
 ---
 
